@@ -1,13 +1,10 @@
 package de.quandoo.recruitment.registry.model;
 
-public class Customer {
-    private final String uuid;
+import com.google.common.base.Preconditions;
 
-    public Customer(final String uuid) {
-        this.uuid = uuid;
-    }
+public record Customer(String uuid) {
 
-    public String getUuid() {
-        return uuid;
-    }
+  public Customer(String uuid) {
+    this.uuid = Preconditions.checkNotNull(uuid, "Customer uuid could not be null!");
+  }
 }

@@ -1,15 +1,10 @@
 package de.quandoo.recruitment.registry.model;
 
-public class Cuisine {
+import com.google.common.base.Preconditions;
 
-    private final String name;
+public record Cuisine(String name) {
 
-    public Cuisine(final String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
+  public Cuisine(String name) {
+    this.name = Preconditions.checkNotNull(name, "Cuisine name could not be null!");
+  }
 }
