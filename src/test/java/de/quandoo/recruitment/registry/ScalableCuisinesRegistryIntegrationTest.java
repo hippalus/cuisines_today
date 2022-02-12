@@ -1,8 +1,7 @@
 package de.quandoo.recruitment.registry;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import de.quandoo.recruitment.registry.adapters.redis.CuisineCustomersRedisAdapter;
 import de.quandoo.recruitment.registry.adapters.redis.CustomerCuisinesRedisAdapter;
@@ -53,6 +52,22 @@ public class ScalableCuisinesRegistryIntegrationTest extends AbstractIntegration
     cuisinesRegistry.register(Customer.of("13"), Cuisine.of("german"));
     cuisinesRegistry.register(Customer.of("13"), Cuisine.of("french"));
 
+    cuisinesRegistry.register(Customer.of("100"), Cuisine.of("french"));
+    cuisinesRegistry.register(Customer.of("130"), Cuisine.of("french"));
+    //six
+    cuisinesRegistry.register(Customer.of("20"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("60"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("70"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("80"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("90"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("100"), Cuisine.of("german"));
+    //six
+    cuisinesRegistry.register(Customer.of("110"), Cuisine.of("turkey"));
+    cuisinesRegistry.register(Customer.of("120"), Cuisine.of("turkey"));
+    cuisinesRegistry.register(Customer.of("130"), Cuisine.of("turkey"));
+    cuisinesRegistry.register(Customer.of("140"), Cuisine.of("turkey"));
+    cuisinesRegistry.register(Customer.of("150"), Cuisine.of("turkey"));
+    cuisinesRegistry.register(Customer.of("160"), Cuisine.of("turkey"));
   }
 
   @AfterAll
@@ -64,7 +79,11 @@ public class ScalableCuisinesRegistryIntegrationTest extends AbstractIntegration
   @Test
   void shouldRegisterCuisineForCustomer() {
     final List<Customer> frCustomerList = cuisinesRegistry.cuisineCustomers(new Cuisine("french"));
-    assertEquals(List.of(new Customer("1"), new Customer("13")), frCustomerList);
+    assertThat(frCustomerList).containsExactlyInAnyOrder(
+        Customer.of("1"),
+        Customer.of("13"),
+        Customer.of("100"),
+        Customer.of("130"));
   }
 
   @Test
@@ -78,13 +97,28 @@ public class ScalableCuisinesRegistryIntegrationTest extends AbstractIntegration
   }
 
   @Test
+  void shouldRegisterSameCustomerForCuisine() {
+    cuisinesRegistry.register(Customer.of("9999999"), Cuisine.of("french"));
+    cuisinesRegistry.register(Customer.of("9999999"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("9999999"), Cuisine.of("italian"));
+
+    final List<Cuisine> frCustomerList = cuisinesRegistry.customerCuisines(new Customer("9999999"));
+
+    assertThat(frCustomerList).containsExactlyInAnyOrder(Cuisine.of("german"), Cuisine.of("french"), Cuisine.of("italian"));
+  }
+
+  @Test
   void shouldThrowExceptionNullCuisineOnGetCustomers() {
-    assertThrows(NullPointerException.class, () -> cuisinesRegistry.cuisineCustomers(null), "Cuisine could not be null!");
+    assertThatExceptionOfType(NullPointerException.class)
+        .isThrownBy(() -> cuisinesRegistry.cuisineCustomers(null))
+        .withMessage("Cuisine could not be null!");
   }
 
   @Test
   void shouldThrowExceptionNullCustomerOnGetCuisines() {
-    assertThrows(NullPointerException.class, () -> cuisinesRegistry.customerCuisines(null), "Customer could not be null!");
+    assertThatExceptionOfType(NullPointerException.class)
+        .isThrownBy(() -> cuisinesRegistry.customerCuisines(null))
+        .withMessage("Customer could not be null!");
   }
 
   @Test
@@ -97,7 +131,60 @@ public class ScalableCuisinesRegistryIntegrationTest extends AbstractIntegration
     //then:
     assertThat(top1Cuisines).containsExactly(Cuisine.of("german"));
     assertThat(top2Cuisines).containsExactly(Cuisine.of("german"), Cuisine.of("turkey"));
-    assertThat(top3Cuisines).containsExactly(Cuisine.of("german"), Cuisine.of("turkey"), Cuisine.of("italian"));
+    assertThat(top3Cuisines).containsExactly(Cuisine.of("german"), Cuisine.of("turkey"), Cuisine.of("french"));
+  }
+
+  @Test
+  void shouldGetTopNCuisinesSameOrder() {
+    //given:
+    cuisinesRegistry.register(Customer.of("100"), Cuisine.of("french"));
+    cuisinesRegistry.register(Customer.of("130"), Cuisine.of("french"));
+    //six
+    cuisinesRegistry.register(Customer.of("20"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("60"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("70"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("80"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("90"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("100"), Cuisine.of("german"));
+    //six
+    cuisinesRegistry.register(Customer.of("110"), Cuisine.of("turkey"));
+    cuisinesRegistry.register(Customer.of("120"), Cuisine.of("turkey"));
+    cuisinesRegistry.register(Customer.of("130"), Cuisine.of("turkey"));
+    cuisinesRegistry.register(Customer.of("140"), Cuisine.of("turkey"));
+    cuisinesRegistry.register(Customer.of("150"), Cuisine.of("turkey"));
+    cuisinesRegistry.register(Customer.of("160"), Cuisine.of("turkey"));
+
+    //when:
+    final List<Cuisine> top2Cuisines = cuisinesRegistry.topCuisines(2);
+
+    //then:
+    assertThat(top2Cuisines).containsExactly(Cuisine.of("german"), Cuisine.of("turkey"));
+  }
+
+  @Test
+  void shouldThrowIllegalArgExWhenTopNCuisinesLessThan1() {
+    assertThatExceptionOfType(IllegalArgumentException.class)
+        .isThrownBy(() -> cuisinesRegistry.topCuisines(0))
+        .withMessage("n should be greater than zero!");
+
+    assertThatExceptionOfType(IllegalArgumentException.class)
+        .isThrownBy(() -> cuisinesRegistry.topCuisines(-5))
+        .withMessage("n should be greater than zero!");
+  }
+
+
+  @Test
+  void shouldThrowNullPointerExWhenRegisterNullArg() {
+    assertThatExceptionOfType(NullPointerException.class)
+        .isThrownBy(() -> cuisinesRegistry.register(null, null));
+
+    assertThatExceptionOfType(NullPointerException.class)
+        .isThrownBy(() -> cuisinesRegistry.register(null, Cuisine.of("french")))
+        .withMessage("Customer could not be null!");
+
+    assertThatExceptionOfType(NullPointerException.class)
+        .isThrownBy(() -> cuisinesRegistry.register(Customer.of("2"), null))
+        .withMessage("Cuisine could not be null!");
   }
 
 }
