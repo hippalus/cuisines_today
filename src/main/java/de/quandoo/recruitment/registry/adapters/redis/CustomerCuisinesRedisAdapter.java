@@ -1,8 +1,8 @@
-package de.quandoo.recruitment.registry.adaters.redis;
+package de.quandoo.recruitment.registry.adapters.redis;
 
 import com.google.common.base.Preconditions;
-import de.quandoo.recruitment.registry.adaters.redis.entitiy.CuisineREntity;
-import de.quandoo.recruitment.registry.adaters.redis.entitiy.CustomerREntity;
+import de.quandoo.recruitment.registry.adapters.redis.entitiy.CuisineREntity;
+import de.quandoo.recruitment.registry.adapters.redis.entitiy.CustomerREntity;
 import de.quandoo.recruitment.registry.model.Cuisine;
 import de.quandoo.recruitment.registry.model.Customer;
 import de.quandoo.recruitment.registry.ports.CustomerCuisinesPort;

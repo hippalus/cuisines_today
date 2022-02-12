@@ -1,4 +1,4 @@
-package de.quandoo.recruitment.registry.adaters.redis.entitiy;
+package de.quandoo.recruitment.registry.adapters.redis.entitiy;
 
 import de.quandoo.recruitment.registry.model.Customer;
 import lombok.AllArgsConstructor;

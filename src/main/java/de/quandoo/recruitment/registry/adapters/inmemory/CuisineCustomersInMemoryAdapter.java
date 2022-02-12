@@ -1,4 +1,4 @@
-package de.quandoo.recruitment.registry.adaters.inmemory;
+package de.quandoo.recruitment.registry.adapters.inmemory;
 
 import com.google.common.base.Preconditions;
 import de.quandoo.recruitment.registry.model.Cuisine;

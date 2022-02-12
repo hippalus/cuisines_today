@@ -1,15 +1,26 @@
 plugins {
+    id 'java'
     id 'java-library'
 }
 
-// In this section you declare where to find the dependencies of your project
+group = 'de.quandoo'
+version = '0.0.1'
+sourceCompatibility = '17'
+
+
 repositories {
     mavenCentral()
 }
 
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
 dependencies {
     // This dependency is exported to consumers, that is to say found on their compile classpath.
-    api 'org.apache.commons:commons-math3:3.6.1'
+    implementation 'org.apache.commons:commons-math3:3.6.1'
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation 'com.google.guava:guava:20.0'
@@ -18,9 +29,9 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.22'
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
+
     testCompileOnly 'org.projectlombok:lombok:1.18.22'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
-
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
     testImplementation group: 'it.ozimov', name: 'embedded-redis', version: '0.7.3'
@@ -29,7 +40,7 @@ dependencies {
 
 }
 
-test {
+tasks.named('test') {
     useJUnitPlatform()
 }
 

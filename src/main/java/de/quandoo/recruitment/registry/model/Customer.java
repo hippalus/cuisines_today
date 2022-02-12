@@ -7,4 +7,8 @@ public record Customer(String uuid) {
   public Customer(String uuid) {
     this.uuid = Preconditions.checkNotNull(uuid, "Customer uuid could not be null!");
   }
+
+  public static Customer of(String uuid) {
+    return new Customer(uuid);
+  }
 }

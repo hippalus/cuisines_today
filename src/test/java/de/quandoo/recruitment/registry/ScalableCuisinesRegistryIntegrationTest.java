@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import de.quandoo.recruitment.registry.adaters.redis.CuisineCustomersRedisAdapter;
-import de.quandoo.recruitment.registry.adaters.redis.CustomerCuisinesRedisAdapter;
+import de.quandoo.recruitment.registry.adapters.redis.CuisineCustomersRedisAdapter;
+import de.quandoo.recruitment.registry.adapters.redis.CustomerCuisinesRedisAdapter;
 import de.quandoo.recruitment.registry.api.CuisinesRegistry;
 import de.quandoo.recruitment.registry.model.Cuisine;
 import de.quandoo.recruitment.registry.model.Customer;
@@ -36,22 +36,22 @@ public class ScalableCuisinesRegistryIntegrationTest extends AbstractIntegration
 
   private static void fillTestData() {
     //given:
-    cuisinesRegistry.register(new Customer("1"), new Cuisine("french"));
-    cuisinesRegistry.register(new Customer("2"), new Cuisine("german"));
-    cuisinesRegistry.register(new Customer("3"), new Cuisine("italian"));
-    cuisinesRegistry.register(new Customer("4"), new Cuisine("italian"));
-    cuisinesRegistry.register(new Customer("5"), new Cuisine("italian"));
-    cuisinesRegistry.register(new Customer("6"), new Cuisine("german"));
-    cuisinesRegistry.register(new Customer("7"), new Cuisine("german"));
-    cuisinesRegistry.register(new Customer("8"), new Cuisine("german"));
-    cuisinesRegistry.register(new Customer("9"), new Cuisine("german"));
-    cuisinesRegistry.register(new Customer("10"), new Cuisine("german"));
-    cuisinesRegistry.register(new Customer("11"), new Cuisine("turkey"));
-    cuisinesRegistry.register(new Customer("12"), new Cuisine("turkey"));
-    cuisinesRegistry.register(new Customer("13"), new Cuisine("turkey"));
-    cuisinesRegistry.register(new Customer("14"), new Cuisine("turkey"));
-    cuisinesRegistry.register(new Customer("13"), new Cuisine("german"));
-    cuisinesRegistry.register(new Customer("13"), new Cuisine("french"));
+    cuisinesRegistry.register(Customer.of("1"), Cuisine.of("french"));
+    cuisinesRegistry.register(Customer.of("2"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("3"), Cuisine.of("italian"));
+    cuisinesRegistry.register(Customer.of("4"), Cuisine.of("italian"));
+    cuisinesRegistry.register(Customer.of("5"), Cuisine.of("italian"));
+    cuisinesRegistry.register(Customer.of("6"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("7"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("8"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("9"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("10"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("11"), Cuisine.of("turkey"));
+    cuisinesRegistry.register(Customer.of("12"), Cuisine.of("turkey"));
+    cuisinesRegistry.register(Customer.of("13"), Cuisine.of("turkey"));
+    cuisinesRegistry.register(Customer.of("14"), Cuisine.of("turkey"));
+    cuisinesRegistry.register(Customer.of("13"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("13"), Cuisine.of("french"));
 
   }
 
@@ -71,9 +71,10 @@ public class ScalableCuisinesRegistryIntegrationTest extends AbstractIntegration
   void shouldRegisterCustomerForCuisine() {
     final List<Cuisine> frCustomerList = cuisinesRegistry.customerCuisines(new Customer("2"));
     final List<Cuisine> multiCuisineCustomerList = cuisinesRegistry.customerCuisines(new Customer("13"));
-    assertThat(frCustomerList).isEqualTo(List.of(new Cuisine("german")));
-    assertThat(multiCuisineCustomerList).containsExactlyInAnyOrder(new Cuisine("french"), new Cuisine("turkey"),
-        new Cuisine("german"));
+
+    assertThat(frCustomerList).isEqualTo(List.of(Cuisine.of("german")));
+    assertThat(multiCuisineCustomerList)
+        .containsExactlyInAnyOrder(Cuisine.of("french"), Cuisine.of("turkey"), Cuisine.of("german"));
   }
 
   @Test
@@ -94,9 +95,9 @@ public class ScalableCuisinesRegistryIntegrationTest extends AbstractIntegration
     final List<Cuisine> top3Cuisines = cuisinesRegistry.topCuisines(3);
 
     //then:
-    assertThat(top1Cuisines).containsExactly(new Cuisine("german"));
-    assertThat(top2Cuisines).containsExactly(new Cuisine("german"), new Cuisine("turkey"));
-    assertThat(top3Cuisines).containsExactly(new Cuisine("german"), new Cuisine("turkey"), new Cuisine("italian"));
+    assertThat(top1Cuisines).containsExactly(Cuisine.of("german"));
+    assertThat(top2Cuisines).containsExactly(Cuisine.of("german"), Cuisine.of("turkey"));
+    assertThat(top3Cuisines).containsExactly(Cuisine.of("german"), Cuisine.of("turkey"), Cuisine.of("italian"));
   }
 
 }
