@@ -2,8 +2,8 @@ package de.quandoo.recruitment.registry;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
 import de.quandoo.recruitment.registry.api.CuisinesRegistry;
 import de.quandoo.recruitment.registry.model.Cuisine;
@@ -81,14 +81,14 @@ class InMemoryCuisinesRegistryTest {
 
   @Test
   void shouldThrowExceptionNullCuisineOnGetCustomers() {
-    assertThatExceptionOfType(NullPointerException.class)
+    assertThatNullPointerException()
         .isThrownBy(() -> cuisinesRegistry.cuisineCustomers(null))
         .withMessage("Cuisine could not be null!");
   }
 
   @Test
   void shouldThrowExceptionNullCustomerOnGetCuisines() {
-    assertThatExceptionOfType(NullPointerException.class)
+    assertThatNullPointerException()
         .isThrownBy(() -> cuisinesRegistry.customerCuisines(null))
         .withMessage("Customer could not be null!");
   }
@@ -106,9 +106,9 @@ class InMemoryCuisinesRegistryTest {
     cuisinesRegistry.register(Customer.of("8"), Cuisine.of("german"));
     cuisinesRegistry.register(Customer.of("9"), Cuisine.of("german"));
     cuisinesRegistry.register(Customer.of("10"), Cuisine.of("german"));
-    cuisinesRegistry.register(Customer.of("11"), Cuisine.of("turkey"));
-    cuisinesRegistry.register(Customer.of("12"), Cuisine.of("turkey"));
-    cuisinesRegistry.register(Customer.of("13"), Cuisine.of("turkey"));
+    cuisinesRegistry.register(Customer.of("11"), Cuisine.of("turkish"));
+    cuisinesRegistry.register(Customer.of("12"), Cuisine.of("turkish"));
+    cuisinesRegistry.register(Customer.of("13"), Cuisine.of("turkish"));
     cuisinesRegistry.register(Customer.of("13"), Cuisine.of("german"));
     cuisinesRegistry.register(Customer.of("13"), Cuisine.of("french"));
 
@@ -119,8 +119,8 @@ class InMemoryCuisinesRegistryTest {
 
     //then:
     assertThat(top1Cuisines).isEqualTo(List.of(Cuisine.of("german")));
-    assertThat(top2Cuisines).containsExactly(Cuisine.of("german"), Cuisine.of("turkey"));
-    assertThat(top3Cuisines).containsExactly(Cuisine.of("german"), Cuisine.of("turkey"), Cuisine.of("italian"));
+    assertThat(top2Cuisines).containsExactly(Cuisine.of("german"), Cuisine.of("turkish"));
+    assertThat(top3Cuisines).containsExactly(Cuisine.of("german"), Cuisine.of("turkish"), Cuisine.of("italian"));
   }
 
   @Test
@@ -136,18 +136,18 @@ class InMemoryCuisinesRegistryTest {
     cuisinesRegistry.register(Customer.of("9"), Cuisine.of("german"));
     cuisinesRegistry.register(Customer.of("10"), Cuisine.of("german"));
     //six
-    cuisinesRegistry.register(Customer.of("11"), Cuisine.of("turkey"));
-    cuisinesRegistry.register(Customer.of("12"), Cuisine.of("turkey"));
-    cuisinesRegistry.register(Customer.of("13"), Cuisine.of("turkey"));
-    cuisinesRegistry.register(Customer.of("14"), Cuisine.of("turkey"));
-    cuisinesRegistry.register(Customer.of("15"), Cuisine.of("turkey"));
-    cuisinesRegistry.register(Customer.of("16"), Cuisine.of("turkey"));
+    cuisinesRegistry.register(Customer.of("11"), Cuisine.of("turkish"));
+    cuisinesRegistry.register(Customer.of("12"), Cuisine.of("turkish"));
+    cuisinesRegistry.register(Customer.of("13"), Cuisine.of("turkish"));
+    cuisinesRegistry.register(Customer.of("14"), Cuisine.of("turkish"));
+    cuisinesRegistry.register(Customer.of("15"), Cuisine.of("turkish"));
+    cuisinesRegistry.register(Customer.of("16"), Cuisine.of("turkish"));
 
     //when:
     final List<Cuisine> top2Cuisines = cuisinesRegistry.topCuisines(2);
 
     //then:
-    assertThat(top2Cuisines).containsExactly(Cuisine.of("german"), Cuisine.of("turkey"));
+    assertThat(top2Cuisines).containsExactly(Cuisine.of("german"), Cuisine.of("turkish"));
   }
 
   @Test
@@ -158,20 +158,26 @@ class InMemoryCuisinesRegistryTest {
     cuisinesRegistry.register(Customer.of("3"), Cuisine.of("italian"));
     cuisinesRegistry.register(Customer.of("4"), Cuisine.of("italian"));
 
-    assertThrows(IllegalArgumentException.class, () -> cuisinesRegistry.topCuisines(0), "n should be greater than zero!");
-    assertThrows(IllegalArgumentException.class, () -> cuisinesRegistry.topCuisines(-5), "n should be greater than zero!");
+    assertThatIllegalArgumentException()
+        .isThrownBy(() -> cuisinesRegistry.topCuisines(0))
+        .withMessage("n should be greater than zero!");
+
+    assertThatIllegalArgumentException()
+        .isThrownBy(() -> cuisinesRegistry.topCuisines(-5))
+        .withMessage("n should be greater than zero!");
+
   }
 
   @Test
   void shouldThrowNullPointerExWhenRegisterNullArg() {
-    assertThatExceptionOfType(NullPointerException.class)
+    assertThatNullPointerException()
         .isThrownBy(() -> cuisinesRegistry.register(null, null));
 
-    assertThatExceptionOfType(NullPointerException.class)
+    assertThatNullPointerException()
         .isThrownBy(() -> cuisinesRegistry.register(null, Cuisine.of("french")))
         .withMessage("Customer could not be null!");
 
-    assertThatExceptionOfType(NullPointerException.class)
+    assertThatNullPointerException()
         .isThrownBy(() -> cuisinesRegistry.register(Customer.of("2"), null))
         .withMessage("Cuisine could not be null!");
   }
