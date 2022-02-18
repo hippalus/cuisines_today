@@ -11,40 +11,44 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import org.redisson.api.RMapCache;
 import org.redisson.api.RSetCache;
 import org.redisson.api.RedissonClient;
 
 public class CuisineCustomersRedisAdapter implements CuisineCustomersPort {
 
-  private final RMapCache<CuisineREntity, RSetCache<CustomerREntity>> cache;
+  private final RMapCache<CuisineREntity, RSetCache<CustomerREntity>> cuisineCustomersCache;
   private final RedissonClient redissonClient;
 
   public CuisineCustomersRedisAdapter(final RedissonClient redissonClient) {
     this.redissonClient = redissonClient;
-    this.cache = redissonClient.getMapCache("cuisine-customers-cache");
+    this.cuisineCustomersCache = redissonClient.getMapCache("cuisine-customers-cache");
   }
 
   @Override
   public void register(final Cuisine cuisine, final Customer customer) {
     Preconditions.checkNotNull(cuisine, "Cuisine could not be null!");
     Preconditions.checkNotNull(customer, "Customer could not be null!");
-    this.cache.computeIfAbsent(
-        CuisineREntity.of(cuisine),
-        c -> redissonClient.getSetCache(getCustomerSetCacheNameByCuisine(cuisine))
-    ).add(CustomerREntity.of(customer));
+    final CuisineREntity cuisineREntity = CuisineREntity.of(cuisine);
+    final CustomerREntity customerREntity = CustomerREntity.of(customer);
+    this.cuisineCustomersCache.computeIfAbsent(cuisineREntity, createNewCustomerSetCacheForCuisine()).add(customerREntity);
   }
 
-  private String getCustomerSetCacheNameByCuisine(final Cuisine cuisine) {
-    return cuisine.name() + "customers-set-cache";
+  private Function<CuisineREntity, RSetCache<CustomerREntity>> createNewCustomerSetCacheForCuisine() {
+    return cuisineR -> redissonClient.getSetCache(cuisineR.getName() + "-customers-set-cache");
   }
 
+  //TODO: optimize this method. Use Max Heap Tree data structure with redis.
+  // each topCuisines method invokes should be max O(n) but it time complexity is O(nlogn)
   @Override
   public List<Cuisine> topCuisines(final int n) {
     Preconditions.checkArgument(n > 0, "n should be greater than zero!");
-    return this.cache.readAllEntrySet().stream().sorted(cuisineComparator()).limit(n)
+    return this.cuisineCustomersCache.entrySet()
+        .stream()
+        .sorted(cuisineComparator())
+        .limit(n)
         .map(Entry::getKey)
         .map(CuisineREntity::toModel)
         .toList();
@@ -57,15 +61,14 @@ public class CuisineCustomersRedisAdapter implements CuisineCustomersPort {
   @Override
   public List<Customer> cuisineCustomers(final Cuisine cuisine) {
     Preconditions.checkNotNull(cuisine, "Cuisine could not be null!");
-    return Optional.ofNullable(cache.get(CuisineREntity.of(cuisine)))
-        .map(RSetCache::readAll)
+    return Optional.ofNullable(cuisineCustomersCache.get(CuisineREntity.of(cuisine)))
         .stream().filter(Objects::nonNull)
         .mapMulti(this::toModel)
         .toList();
   }
 
   // using mapMulti (jdk17) instead of flatmap for stream performance
-  private void toModel(Set<CustomerREntity> customerREntities, Consumer<Customer> consumer) {
+  private void toModel(RSetCache<CustomerREntity> customerREntities, Consumer<Customer> consumer) {
     customerREntities.forEach(customerREntity -> consumer.accept(customerREntity.toModel()));
   }
 }

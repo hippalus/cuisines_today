@@ -11,42 +11,39 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import org.redisson.api.RMapCache;
 import org.redisson.api.RSetCache;
 import org.redisson.api.RedissonClient;
 
 public class CustomerCuisinesRedisAdapter implements CustomerCuisinesPort {
 
-  private final RMapCache<CustomerREntity, RSetCache<CuisineREntity>> cache;
+  private final RMapCache<CustomerREntity, RSetCache<CuisineREntity>> customerCuisinesCache;
   private final RedissonClient redissonClient;
 
   public CustomerCuisinesRedisAdapter(final RedissonClient redissonClient) {
     this.redissonClient = redissonClient;
-    this.cache = redissonClient.getMapCache("customer-cuisines-cache");
+    this.customerCuisinesCache = redissonClient.getMapCache("customer-cuisines-cache");
   }
-
 
   @Override
   public void register(final Customer customer, final Cuisine cuisine) {
     Preconditions.checkNotNull(customer, "Customer could not be null!");
     Preconditions.checkNotNull(cuisine, "Cuisine could not be null!");
-    this.cache.computeIfAbsent(
-        CustomerREntity.of(customer),
-        c -> redissonClient.getSetCache(getCuisineSetCacheByCustomer(customer))
-    ).add(CuisineREntity.of(cuisine));
+    final CustomerREntity customerREntity = CustomerREntity.of(customer);
+    this.customerCuisinesCache.computeIfAbsent(customerREntity, createNewCuisineSetCacheForCustomer())
+        .add(CuisineREntity.of(cuisine));
   }
 
-  private String getCuisineSetCacheByCustomer(Customer customer) {
-    return customer.uuid() + "cuisines-set-cache";
+  private Function<CustomerREntity, RSetCache<CuisineREntity>> createNewCuisineSetCacheForCustomer() {
+    return customerREntity -> redissonClient.getSetCache(customerREntity.getUuid() + "-cuisines-set-cache");
   }
 
   @Override
   public List<Cuisine> customerCuisines(final Customer customer) {
     Preconditions.checkNotNull(customer, "Customer could not be null!");
-    return Optional.ofNullable(this.cache.get(CustomerREntity.of(customer)))
-        .map(RSetCache::readAll)
-        .stream()
-        .filter(Objects::nonNull)
+    return Optional.ofNullable(this.customerCuisinesCache.get(CustomerREntity.of(customer)))
+        .stream().filter(Objects::nonNull)
         .mapMulti(this::toModel)
         .toList();
   }

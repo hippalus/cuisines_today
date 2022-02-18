@@ -24,7 +24,7 @@ dependencies {
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation 'com.google.guava:guava:20.0'
-
+    implementation 'ch.qos.logback:logback-classic:1.3.0-alpha13'
     implementation 'org.redisson:redisson:3.16.8'
     compileOnly 'org.projectlombok:lombok:1.18.22'
     annotationProcessor 'org.projectlombok:lombok:1.18.22'

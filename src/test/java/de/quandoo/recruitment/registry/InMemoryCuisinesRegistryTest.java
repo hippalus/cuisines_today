@@ -119,15 +119,69 @@ class InMemoryCuisinesRegistryTest {
 
     //then:
     assertThat(top1Cuisines).isEqualTo(List.of(Cuisine.of("german")));
-    assertThat(top2Cuisines).containsExactly(Cuisine.of("german"), Cuisine.of("turkish"));
-    assertThat(top3Cuisines).containsExactly(Cuisine.of("german"), Cuisine.of("turkish"), Cuisine.of("italian"));
+    assertThat(top2Cuisines).containsExactly(Cuisine.of("german"), Cuisine.of("italian"));
+    assertThat(top3Cuisines).containsExactly(Cuisine.of("german"), Cuisine.of("italian"), Cuisine.of("turkish"));
   }
 
   @Test
-  void shouldGetTopNCuisinesSameOrder() {
+  void shouldGetTopNCuisines2() {
     //given:
+    //10
+    cuisinesRegistry.register(Customer.of("11"), Cuisine.of("turkish"));
+    cuisinesRegistry.register(Customer.of("12"), Cuisine.of("turkish"));
+    cuisinesRegistry.register(Customer.of("13"), Cuisine.of("turkish"));
+    cuisinesRegistry.register(Customer.of("14"), Cuisine.of("turkish"));
+    cuisinesRegistry.register(Customer.of("110"), Cuisine.of("turkish"));
+    cuisinesRegistry.register(Customer.of("120"), Cuisine.of("turkish"));
+    cuisinesRegistry.register(Customer.of("130"), Cuisine.of("turkish"));
+    cuisinesRegistry.register(Customer.of("140"), Cuisine.of("turkish"));
+    cuisinesRegistry.register(Customer.of("150"), Cuisine.of("turkish"));
+    cuisinesRegistry.register(Customer.of("160"), Cuisine.of("turkish"));
+    //
+    cuisinesRegistry.register(Customer.of("3"), Cuisine.of("italian"));
+    cuisinesRegistry.register(Customer.of("4"), Cuisine.of("italian"));
+    cuisinesRegistry.register(Customer.of("5"), Cuisine.of("italian"));
+
     cuisinesRegistry.register(Customer.of("1"), Cuisine.of("french"));
     cuisinesRegistry.register(Customer.of("13"), Cuisine.of("french"));
+    cuisinesRegistry.register(Customer.of("100"), Cuisine.of("french"));
+    cuisinesRegistry.register(Customer.of("130"), Cuisine.of("french"));
+    //10
+    cuisinesRegistry.register(Customer.of("2"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("6"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("7"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("8"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("9"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("10"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("13"), Cuisine.of("german"));
+
+    cuisinesRegistry.register(Customer.of("39"), Cuisine.of("italian"));
+    cuisinesRegistry.register(Customer.of("41"), Cuisine.of("italian"));
+    cuisinesRegistry.register(Customer.of("56"), Cuisine.of("italian"));
+
+    cuisinesRegistry.register(Customer.of("20"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("60"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("70"), Cuisine.of("german"));
+
+    //when:
+    final List<Cuisine> top1Cuisines = cuisinesRegistry.topCuisines(1);
+    final List<Cuisine> top2Cuisines = cuisinesRegistry.topCuisines(2);
+    final List<Cuisine> top3Cuisines = cuisinesRegistry.topCuisines(3);
+
+    //then:
+    assertThat(top1Cuisines).containsExactly(Cuisine.of("turkish"));
+    assertThat(top2Cuisines).containsExactly(Cuisine.of("turkish"), Cuisine.of("german"));
+    assertThat(top3Cuisines).containsExactly(Cuisine.of("turkish"), Cuisine.of("german"), Cuisine.of("italian"));
+  }
+  @Test
+  void shouldGetTopNCuisinesSameOrder() {
+    //given:
+    cuisinesRegistry.register(Customer.of("9"), Cuisine.of("italian"));
+    cuisinesRegistry.register(Customer.of("10"), Cuisine.of("italian"));
+    cuisinesRegistry.register(Customer.of("11"), Cuisine.of("italian"));
+
+    cuisinesRegistry.register(Customer.of("1"), Cuisine.of("french"));
+    cuisinesRegistry.register(Customer.of("5"), Cuisine.of("french"));
     //six
     cuisinesRegistry.register(Customer.of("2"), Cuisine.of("german"));
     cuisinesRegistry.register(Customer.of("6"), Cuisine.of("german"));
@@ -135,6 +189,7 @@ class InMemoryCuisinesRegistryTest {
     cuisinesRegistry.register(Customer.of("8"), Cuisine.of("german"));
     cuisinesRegistry.register(Customer.of("9"), Cuisine.of("german"));
     cuisinesRegistry.register(Customer.of("10"), Cuisine.of("german"));
+
     //six
     cuisinesRegistry.register(Customer.of("11"), Cuisine.of("turkish"));
     cuisinesRegistry.register(Customer.of("12"), Cuisine.of("turkish"));

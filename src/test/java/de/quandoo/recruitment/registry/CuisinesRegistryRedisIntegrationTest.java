@@ -29,7 +29,7 @@ public class CuisinesRegistryRedisIntegrationTest extends AbstractIntegrationTes
     AbstractIntegrationTest.startCluster();
 
     final Config config = new Config();
-    config.useSingleServer().setAddress("redis://127.0.0.1:6379");
+    config.useSingleServer().setAddress("redis://127.0.0.1:" + port);
     config.setCodec(JsonJacksonCodec.INSTANCE);
     final RedissonClient redissonClient = Redisson.create(config);
 
@@ -41,47 +41,44 @@ public class CuisinesRegistryRedisIntegrationTest extends AbstractIntegrationTes
     fillTestData();
   }
 
+  @AfterAll
+  public static void afterAll() {
+    AbstractIntegrationTest.stopCluster();
+    cuisinesRegistry = null;
+  }
+
   private static void fillTestData() {
     //given:
     cuisinesRegistry.register(Customer.of("1"), Cuisine.of("french"));
+    cuisinesRegistry.register(Customer.of("13"), Cuisine.of("french"));
+    cuisinesRegistry.register(Customer.of("100"), Cuisine.of("french"));
+    cuisinesRegistry.register(Customer.of("130"), Cuisine.of("french"));
+    //10
     cuisinesRegistry.register(Customer.of("2"), Cuisine.of("german"));
-    cuisinesRegistry.register(Customer.of("3"), Cuisine.of("italian"));
-    cuisinesRegistry.register(Customer.of("4"), Cuisine.of("italian"));
-    cuisinesRegistry.register(Customer.of("5"), Cuisine.of("italian"));
     cuisinesRegistry.register(Customer.of("6"), Cuisine.of("german"));
     cuisinesRegistry.register(Customer.of("7"), Cuisine.of("german"));
     cuisinesRegistry.register(Customer.of("8"), Cuisine.of("german"));
     cuisinesRegistry.register(Customer.of("9"), Cuisine.of("german"));
     cuisinesRegistry.register(Customer.of("10"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("13"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("20"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("60"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("70"), Cuisine.of("german"));
+    //10
     cuisinesRegistry.register(Customer.of("11"), Cuisine.of("turkish"));
     cuisinesRegistry.register(Customer.of("12"), Cuisine.of("turkish"));
     cuisinesRegistry.register(Customer.of("13"), Cuisine.of("turkish"));
     cuisinesRegistry.register(Customer.of("14"), Cuisine.of("turkish"));
-    cuisinesRegistry.register(Customer.of("13"), Cuisine.of("german"));
-    cuisinesRegistry.register(Customer.of("13"), Cuisine.of("french"));
-
-    cuisinesRegistry.register(Customer.of("100"), Cuisine.of("french"));
-    cuisinesRegistry.register(Customer.of("130"), Cuisine.of("french"));
-    //six
-    cuisinesRegistry.register(Customer.of("20"), Cuisine.of("german"));
-    cuisinesRegistry.register(Customer.of("60"), Cuisine.of("german"));
-    cuisinesRegistry.register(Customer.of("70"), Cuisine.of("german"));
-    cuisinesRegistry.register(Customer.of("80"), Cuisine.of("german"));
-    cuisinesRegistry.register(Customer.of("90"), Cuisine.of("german"));
-    cuisinesRegistry.register(Customer.of("100"), Cuisine.of("german"));
-    //six
     cuisinesRegistry.register(Customer.of("110"), Cuisine.of("turkish"));
     cuisinesRegistry.register(Customer.of("120"), Cuisine.of("turkish"));
     cuisinesRegistry.register(Customer.of("130"), Cuisine.of("turkish"));
     cuisinesRegistry.register(Customer.of("140"), Cuisine.of("turkish"));
     cuisinesRegistry.register(Customer.of("150"), Cuisine.of("turkish"));
     cuisinesRegistry.register(Customer.of("160"), Cuisine.of("turkish"));
-  }
 
-  @AfterAll
-  public static void afterAll() {
-    AbstractIntegrationTest.stopCluster();
-    cuisinesRegistry = null;
+    cuisinesRegistry.register(Customer.of("3"), Cuisine.of("italian"));
+    cuisinesRegistry.register(Customer.of("4"), Cuisine.of("italian"));
+    cuisinesRegistry.register(Customer.of("5"), Cuisine.of("italian"));
   }
 
   @Test
@@ -107,12 +104,12 @@ public class CuisinesRegistryRedisIntegrationTest extends AbstractIntegrationTes
   @Test
   void shouldRegisterSameCustomerForCuisine() {
     cuisinesRegistry.register(Customer.of("9999999"), Cuisine.of("french"));
-    cuisinesRegistry.register(Customer.of("9999999"), Cuisine.of("german"));
+    cuisinesRegistry.register(Customer.of("9999999"), Cuisine.of("american"));
     cuisinesRegistry.register(Customer.of("9999999"), Cuisine.of("italian"));
 
     final List<Cuisine> frCustomerList = cuisinesRegistry.customerCuisines(new Customer("9999999"));
 
-    assertThat(frCustomerList).containsExactlyInAnyOrder(Cuisine.of("german"), Cuisine.of("french"), Cuisine.of("italian"));
+    assertThat(frCustomerList).containsExactlyInAnyOrder(Cuisine.of("american"), Cuisine.of("french"), Cuisine.of("italian"));
   }
 
   @Test
@@ -137,36 +134,23 @@ public class CuisinesRegistryRedisIntegrationTest extends AbstractIntegrationTes
     final List<Cuisine> top3Cuisines = cuisinesRegistry.topCuisines(3);
 
     //then:
-    assertThat(top1Cuisines).containsExactly(Cuisine.of("german"));
-    assertThat(top2Cuisines).containsExactly(Cuisine.of("german"), Cuisine.of("turkish"));
-    assertThat(top3Cuisines).containsExactly(Cuisine.of("german"), Cuisine.of("turkish"), Cuisine.of("french"));
+    //same priority
+    final boolean turkish = top1Cuisines.contains(Cuisine.of("turkish"));
+    final boolean german = top1Cuisines.contains(Cuisine.of("german"));
+    assertThat(turkish || german).isTrue();
+
+    assertThat(top2Cuisines).containsExactlyInAnyOrder(Cuisine.of("turkish"), Cuisine.of("german"));
+
+    assertThat(top3Cuisines.get(2)).isEqualTo(Cuisine.of("french"));
   }
 
   @Test
   void shouldGetTopNCuisinesSameOrder() {
-    //given:
-    cuisinesRegistry.register(Customer.of("100"), Cuisine.of("french"));
-    cuisinesRegistry.register(Customer.of("130"), Cuisine.of("french"));
-    //six
-    cuisinesRegistry.register(Customer.of("20"), Cuisine.of("german"));
-    cuisinesRegistry.register(Customer.of("60"), Cuisine.of("german"));
-    cuisinesRegistry.register(Customer.of("70"), Cuisine.of("german"));
-    cuisinesRegistry.register(Customer.of("80"), Cuisine.of("german"));
-    cuisinesRegistry.register(Customer.of("90"), Cuisine.of("german"));
-    cuisinesRegistry.register(Customer.of("100"), Cuisine.of("german"));
-    //six
-    cuisinesRegistry.register(Customer.of("110"), Cuisine.of("turkish"));
-    cuisinesRegistry.register(Customer.of("120"), Cuisine.of("turkish"));
-    cuisinesRegistry.register(Customer.of("130"), Cuisine.of("turkish"));
-    cuisinesRegistry.register(Customer.of("140"), Cuisine.of("turkish"));
-    cuisinesRegistry.register(Customer.of("150"), Cuisine.of("turkish"));
-    cuisinesRegistry.register(Customer.of("160"), Cuisine.of("turkish"));
-
     //when:
     final List<Cuisine> top2Cuisines = cuisinesRegistry.topCuisines(2);
 
     //then:
-    assertThat(top2Cuisines).containsExactly(Cuisine.of("german"), Cuisine.of("turkish"));
+    assertThat(top2Cuisines).containsExactlyInAnyOrder(Cuisine.of("german"), Cuisine.of("turkish"));
   }
 
   @Test
