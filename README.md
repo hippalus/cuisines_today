@@ -32,8 +32,7 @@ It is ok to change any code as long as the CuisinesRegistry interface remains un
   Customer-Cuisines.
 + Contract with that interfaces for CuisinesRegistry.
 + If we use redis or hazelcast or ignite or memcache we need to implement that interfaces like adapter. It can be SQL or NOSQL
-+ They have 2 example one of inmemory adapter that used ---> there are two implementations, first one is in memory adapter in
-  which ConcurrentHashMap is used and the second is RedisAdapter in which distributed and scalable RMapCache is used
++ There are two implementations, first one is in memory adapter in which ConcurrentHashMap is used and the second is RedisAdapter in which distributed and scalable RMapCache is used
 + When we construct CuisinesRegistry if we passed RedisAdapter they run with redis.
 + When we construct CuisinesRegistry if we passed InMemoryAdapter they run with ConcurrentHashMap.
 + The max heap tree data structure is used to calculate the top cuisines in real time and also to keep them up to date, as well as
